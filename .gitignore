@@ -1,0 +1,12 @@
+
+# Local database files
+data/*.mv.db
+data/*.trace.db
+data/*.lock.db
+
+# Build output
+target/
+
+# IDE files
+.idea/
+.vscode/
