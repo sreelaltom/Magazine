@@ -1,0 +1,7 @@
+com\magazine\model\Magazine.class
+com\magazine\repository\MagazineRepository.class
+com\magazine\controller\AdminController.class
+com\magazine\controller\HomeController.class
+com\magazine\MagazineApplication.class
+com\magazine\service\PdfGeneratorUtil.class
+com\magazine\service\MagazineService.class

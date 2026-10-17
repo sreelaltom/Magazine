@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - MagzPortal</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a th:href="@{/}" class="brand">
+                <span class="brand-icon">📚</span>
+                <span>Magz<strong style="color: var(--primary);">Admin</strong></span>
+            </a>
+            <div class="nav-actions">
+                <a th:href="@{/}" target="_blank" class="btn btn-outline btn-sm">
+                    <span>🌐 View Live Site</span>
+                </a>
+                <a th:href="@{/admin/logout}" class="btn btn-danger btn-sm">
+                    <span>🚪 Logout</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Dashboard Container -->
+    <main class="container" style="padding-top: 2rem;">
+        
+        <!-- Flash Messages -->
+        <div th:if="${successMessage != null}" class="alert alert-success">
+            <span>✅</span>
+            <span th:text="${successMessage}">Operation successful!</span>
+        </div>
+
+        <div th:if="${errorMessage != null}" class="alert alert-danger">
+            <span>⚠️</span>
+            <span th:text="${errorMessage}">An error occurred.</span>
+        </div>
+
+        <div class="admin-grid">
+            
+            <!-- Left Panel: Magazine Upload Form -->
+            <div class="dashboard-card">
+                <h2 class="dashboard-card-title">
+                    <span>📤</span> Upload New Magazine
+                </h2>
+                
+                <form th:action="@{/admin/upload}" method="post" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label class="form-label" for="title">Magazine Title *</label>
+                        <input type="text" id="title" name="title" class="form-control" 
+                               placeholder="e.g., AI Horizon Vol. 5" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="category">Category</label>
+                        <select id="category" name="category" class="form-control">
+                            <option value="NSS">NSS (National Service Scheme)</option>
+                            <option value="NCC">NCC (National Cadet Corps)</option>
+                            <option value="Sports">Sports &amp; Athletics</option>
+                            <option value="Technology">Technology &amp; Innovation</option>
+                            <option value="Cultural">Cultural &amp; Arts</option>
+                            <option value="Academics">Academics &amp; Research</option>
+                            <option value="Campus Life">Campus Life &amp; Events</option>
+                            <option value="General">General / Miscellaneous</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="description">Description *</label>
+                        <textarea id="description" name="description" class="form-control" 
+                                  placeholder="Provide a brief summary or table of contents..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="pdfFile">Upload PDF File *</label>
+                        <input type="file" id="pdfFile" name="pdfFile" class="form-control" 
+                               accept=".pdf" required>
+                        <small style="color: var(--muted); font-size: 0.78rem; display: block; margin-top: 0.25rem;">
+                            Only .pdf documents are accepted (Max 50MB)
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="coverImage">Cover Image (Optional)</label>
+                        <input type="file" id="coverImage" name="coverImage" class="form-control" 
+                               accept="image/*">
+                        <small style="color: var(--muted); font-size: 0.78rem; display: block; margin-top: 0.25rem;">
+                            Optional: PNG or JPG cover. If omitted, a dynamic modern cover is rendered.
+                        </small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; padding: 0.75rem;">
+                        <span>🚀 Publish Magazine</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Right Panel: Published Magazines List / Management -->
+            <div class="dashboard-card">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+                    <h2 class="dashboard-card-title" style="margin-bottom: 0;">
+                        <span>📑</span> Published Magazines
+                    </h2>
+                    <span class="badge-count" th:text="${totalMagazines} + ' Total'">0 Total</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Magazine</th>
+                                <th>Category</th>
+                                <th>Size</th>
+                                <th>Date</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="mag : ${magazines}">
+                                <td>
+                                    <div style="font-weight: 700; color: var(--dark);" th:text="${mag.title}">Magazine Title</div>
+                                    <div style="font-size: 0.8rem; color: var(--muted);" th:text="${#strings.abbreviate(mag.description, 60)}">Short desc...</div>
+                                </td>
+                                <td>
+                                    <span style="font-size: 0.75rem; background: var(--primary-light); color: var(--primary); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600;" 
+                                          th:text="${mag.category}">Technology</span>
+                                </td>
+                                <td th:text="${mag.formattedSize}">1.4 MB</td>
+                                <td th:text="${mag.formattedDate}">Oct 17, 2026</td>
+                                <td style="text-align: right;">
+                                    <div style="display: inline-flex; gap: 0.35rem;">
+                                        <a th:href="@{'/view/' + ${mag.id}}" target="_blank" class="btn btn-outline btn-sm" title="View PDF">
+                                            👁️
+                                        </a>
+                                        <a th:href="@{'/download/' + ${mag.id}}" class="btn btn-outline btn-sm" title="Download">
+                                            ⬇️
+                                        </a>
+                                        <form th:action="@{'/admin/delete/' + ${mag.id}}" method="post" style="display: inline;" 
+                                              onsubmit="return confirm('Are you sure you want to delete this magazine? This will also remove the PDF file.');">
+                                            <button type="submit" class="btn btn-danger btn-sm" title="Delete">
+                                                🗑️
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(magazines)}">
+                                <td colspan="5" style="text-align: center; padding: 2.5rem; color: var(--muted);">
+                                    No magazines have been uploaded yet. Use the form on the left to publish your first issue!
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 MagzPortal Admin Console. Powered by <strong>Java &amp; Spring Boot</strong>.</p>
+    </footer>
+
+</body>
+</html>

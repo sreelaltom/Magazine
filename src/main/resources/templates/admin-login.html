@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - MagzPortal</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a th:href="@{/}" class="brand">
+                <span class="brand-icon">📚</span>
+                <span>Magz<strong style="color: var(--primary);">Portal</strong></span>
+            </a>
+            <div class="nav-actions">
+                <a th:href="@{/}" class="btn btn-outline">
+                    <span>← Back to Magazines</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Login Area -->
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-icon">🔐</div>
+                <h2 class="auth-title">Admin Portal</h2>
+                <p class="auth-hint">Sign in to publish and manage magazines</p>
+            </div>
+
+            <!-- Error message if login failed -->
+            <div th:if="${error != null}" class="alert alert-danger">
+                <span>⚠️</span>
+                <span th:text="${error}">Invalid credentials</span>
+            </div>
+
+            <!-- Logout success notification -->
+            <div th:if="${param.logout != null}" class="alert alert-success">
+                <span>✅</span>
+                <span>You have been logged out successfully.</span>
+            </div>
+
+            <!-- Login Form -->
+            <form th:action="@{/admin/login}" method="post">
+                <div class="form-group">
+                    <label class="form-label" for="username">Username</label>
+                    <input type="text" id="username" name="username" class="form-control" 
+                           placeholder="Enter admin username" required autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" 
+                           placeholder="Enter admin password" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem; padding: 0.75rem;">
+                    Sign In as Administrator →
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 MagzPortal. Developed with <strong>Java &amp; Spring Boot</strong>.</p>
+    </footer>
+
+</body>
+</html>

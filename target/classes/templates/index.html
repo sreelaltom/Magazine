@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MagzPortal - Modern Digital Magazine Hub</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <!-- Google Fonts for typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a th:href="@{/}" class="brand">
+                <span class="brand-icon">📚</span>
+                <span>Magz<strong style="color: var(--primary);">Portal</strong></span>
+            </a>
+            <div class="nav-actions">
+                <a th:href="@{/admin/login}" class="btn btn-outline">
+                    <span>🔐 Admin Panel</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Header -->
+    <header class="hero">
+        <h1 class="hero-title">Discover Inspiring Reads</h1>
+        <p class="hero-subtitle">Browse, read online, and download our curated collection of digital magazines and publications.</p>
+        
+        <!-- Search Bar -->
+        <form th:action="@{/}" method="get" class="search-form">
+            <input type="text" name="search" th:value="${searchQuery}" 
+                   class="search-input" placeholder="Search by magazine title or topics...">
+            <button type="submit" class="search-btn">Search</button>
+        </form>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="container">
+        <!-- Category Filter Pills (Scrollable on Mobile) -->
+        <div class="category-pills-wrapper">
+            <div class="category-pills">
+                <a th:each="cat : ${categories}"
+                   th:href="@{/(category=${cat})}"
+                   th:classappend="${(selectedCategory == cat) or (selectedCategory == null and cat == 'All') or (selectedCategory == 'All' and cat == 'All')} ? 'active' : ''"
+                   class="category-pill">
+                    <span th:text="${cat}">All</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">
+                    <span th:if="${searchQuery != null and !searchQuery.isEmpty()}">
+                        Search Results for "<span th:text="${searchQuery}"></span>"
+                    </span>
+                    <span th:unless="${searchQuery != null and !searchQuery.isEmpty()}">
+                        <span th:if="${selectedCategory != null and selectedCategory != 'All'}" th:text="${selectedCategory} + ' Magazines'">Category Magazines</span>
+                        <span th:unless="${selectedCategory != null and selectedCategory != 'All'}">Featured Magazines</span>
+                    </span>
+                </h2>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <span class="badge-count" th:text="${totalCount} + ' Available'">0 Available</span>
+                <a th:if="${(searchQuery != null and !searchQuery.isEmpty()) or (selectedCategory != null and selectedCategory != 'All')}" 
+                   th:href="@{/}" class="btn btn-outline btn-sm">Clear Filters</a>
+            </div>
+        </div>
+
+        <!-- Modern Card Grid -->
+        <div class="magazine-grid">
+            <!-- Iterate over magazines -->
+            <div th:each="mag : ${magazines}" class="magazine-card">
+                
+                <!-- Card Cover / Header -->
+                <div class="card-cover">
+                    <!-- If custom cover image uploaded -->
+                    <img th:if="${mag.coverFileName != null}" th:src="@{'/uploads/' + ${mag.coverFileName}}" th:alt="${mag.title}">
+                    <div class="card-cover-overlay"></div>
+                    
+                    <span class="cover-badge" th:text="${mag.category}">Technology</span>
+                    
+                    <div class="card-cover-content" th:if="${mag.coverFileName == null}">
+                        <div class="card-cover-icon">📖</div>
+                        <div class="card-cover-title" th:text="${mag.title}">Magazine Title</div>
+                    </div>
+                </div>
+
+                <!-- Card Body -->
+                <div class="card-body">
+                    <div class="card-meta">
+                        <span>📅 <th:block th:text="${mag.formattedDate}">Oct 17, 2026</th:block></span>
+                        <span>💾 <th:block th:text="${mag.formattedSize}">1.2 MB</th:block></span>
+                    </div>
+
+                    <h3 class="card-title" th:text="${mag.title}">Tech Innovator Monthly</h3>
+                    <p class="card-desc" th:text="${mag.description}">Detailed overview of technology trends...</p>
+
+                    <!-- Card Action Buttons -->
+                    <div class="card-actions">
+                        <button type="button" class="btn btn-primary"
+                                th:data-url="@{'/view/' + ${mag.id}}"
+                                th:data-title="${mag.title}"
+                                onclick="openPdfReader(this.getAttribute('data-url'), this.getAttribute('data-title'))">
+                            <span>👁️ Read Online</span>
+                        </button>
+                        <a th:href="@{'/download/' + ${mag.id}}" class="btn btn-outline" title="Download PDF">
+                            <span>⬇️ Download</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State if no magazines found -->
+            <div th:if="${#lists.isEmpty(magazines)}" class="empty-state">
+                <div class="empty-icon">📭</div>
+                <h3 class="empty-title">No Magazines Found</h3>
+                <p style="color: var(--muted); margin-bottom: 1.25rem;">
+                    <span th:if="${searchQuery != null and !searchQuery.isEmpty()}">No matches found for your search term. Try another keyword.</span>
+                    <span th:unless="${searchQuery != null and !searchQuery.isEmpty()}">No magazines have been published yet. Log in as Admin to upload the first issue!</span>
+                </p>
+                <a th:href="@{/admin/login}" class="btn btn-primary">Go to Admin Upload</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- 3D Page Flip Reader Modal -->
+    <div id="pdfModal" class="modal-overlay">
+        <div class="modal-content flipbook-modal-content">
+            <!-- Modal Header Toolbar -->
+            <div class="modal-header flipbook-header">
+                <div class="flipbook-title-wrap">
+                    <span class="flipbook-badge">📖 3D Flipbook</span>
+                    <h3 id="modalTitle" class="modal-title">Magazine Reader</h3>
+                </div>
+
+                <div class="flipbook-toolbar">
+                    <!-- Page Navigation Controls -->
+                    <div class="flipbook-nav-group">
+                        <button type="button" class="btn btn-outline btn-sm" onclick="flipPrevPage()" title="Previous Page (Left Arrow)">
+                            ◀ Prev
+                        </button>
+                        <span id="pageIndicator" class="page-indicator-badge">Loading...</span>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="flipNextPage()" title="Next Page (Right Arrow)">
+                            Next ▶
+                        </button>
+                    </div>
+
+                    <!-- Extra Actions -->
+                    <button type="button" id="soundBtn" class="btn btn-outline btn-sm active" onclick="toggleSound()" title="Toggle Flip Sound">
+                        🔊 Sound On
+                    </button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="toggleFullscreen()" title="Toggle Fullscreen">
+                        ⛶ Fullscreen
+                    </button>
+                    <a id="modalDownloadBtn" href="#" class="btn btn-primary btn-sm" title="Download Original PDF">
+                        ⬇️ Download
+                    </a>
+                    <button class="modal-close" onclick="closePdfReader()" title="Close Reader (Esc)">&times;</button>
+                </div>
+            </div>
+
+            <!-- Modal Body with 3D Flipbook Stage -->
+            <div class="modal-body flipbook-body">
+                <!-- Loading Animation -->
+                <div id="flipbookLoading" class="flipbook-loading">
+                    <div class="flipbook-spinner"></div>
+                    <p style="color: white; font-weight: 600; font-size: 0.95rem;">Preparing 3D Flipbook Pages...</p>
+                    <small style="color: #94a3b8; font-size: 0.8rem;">Rendering pages with realistic 3D paper curl physics</small>
+                </div>
+
+                <!-- Floating Next/Prev Side Controls for Mobile & Desktop -->
+                <button type="button" class="flipbook-floating-arrow arrow-left" onclick="flipPrevPage()" title="Previous Page">
+                    ❮
+                </button>
+                
+                <div id="flipbookContainer" class="flipbook-container"></div>
+
+                <button type="button" class="flipbook-floating-arrow arrow-right" onclick="flipNextPage()" title="Next Page">
+                    ❯
+                </button>
+            </div>
+
+            <!-- Mobile Bottom Bar -->
+            <div class="flipbook-mobile-bar">
+                <button type="button" class="btn btn-outline btn-sm" onclick="flipPrevPage()">◀ Prev</button>
+                <span class="mobile-hint">👆 Drag corner or swipe to flip</span>
+                <button type="button" class="btn btn-outline btn-sm" onclick="flipNextPage()">Next ▶</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 MagzPortal. Developed with <strong>Java, Spring Boot &amp; 3D PageFlip Engine</strong>.</p>
+    </footer>
+
+    <!-- Libraries for 3D Flipbook -->
+    <script th:src="@{/js/pdf.min.js}"></script>
+    <script th:src="@{/js/page-flip.browser.js}"></script>
+    <script th:src="@{/js/flipbook.js}"></script>
+</body>
+</html>
